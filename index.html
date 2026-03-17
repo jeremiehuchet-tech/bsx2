@@ -64,14 +64,16 @@ p {
 </div>
 
 <script>
-let pages = document.querySelectorAll('.page');
-let index = 0;
+window.onload = function () {
+  var pages = document.querySelectorAll('.page');
+  var currentPage = 0;
 
-setInterval(() => {
-  pages[index].classList.remove('active');
-  index = (index + 1) % pages.length;
-  pages[index].classList.add('active');
-}, 8000);
+  setInterval(function () {
+    pages[currentPage].classList.remove('active');
+    currentPage = (currentPage + 1) % pages.length;
+    pages[currentPage].classList.add('active');
+  }, 8000);
+};
 </script>
 
 </body>
