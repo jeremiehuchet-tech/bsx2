@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Repères du jour</title>
+
 <style>
 body {
   margin: 0;
@@ -13,23 +14,65 @@ body {
   justify-content: center;
   height: 100vh;
 }
-.container {
+
+.page {
+  display: none;
   text-align: center;
+  max-width: 1000px;
 }
+
+.active {
+  display: block;
+}
+
 h1 {
   font-size: 60px;
+  margin-bottom: 20px;
 }
+
 p {
   font-size: 40px;
+  margin: 10px 0;
 }
 </style>
 </head>
 
 <body>
-<div class="container">
+
+<div class="page active">
   <h1>Bonjour</h1>
   <p>Nous sommes mardi</p>
   <p>Tout va bien</p>
 </div>
+
+<div class="page">
+  <h1>Aujourd'hui</h1>
+  <p>10h : infirmière</p>
+  <p>12h : déjeuner</p>
+  <p>15h : promenade</p>
+</div>
+
+<div class="page">
+  <h1>Où sont les proches ?</h1>
+  <p>Jérémie : au travail</p>
+  <p>Dorothée : aux courses</p>
+</div>
+
+<div class="page">
+  <h1>Ce soir</h1>
+  <p>Jérémie passe ce soir</p>
+</div>
+
+<script>
+let pages = document.querySelectorAll('.page');
+let index = 0;
+
+setInterval(() => {
+  pages[index].classList.remove('active');
+  index = (index + 1) % pages.length;
+  pages[index].classList.add('active');
+}, 8000);
+</script>
+
 </body>
 </html>
