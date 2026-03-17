@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Repères du jour</title>
-
 <style>
 body {
   margin: 0;
@@ -36,7 +35,6 @@ p {
   margin: 12px 0;
 }
 </style>
-
 </head>
 <body>
 
@@ -73,65 +71,70 @@ function parseCSVLine(line) {
   return result;
 }
 
+function construirePages(data) {
+  var lines = data.trim().split(/\r?\n/);
+
+  if (lines.length <= 1) {
+    return;
+  }
+
+  document.body.innerHTML = "";
+  pages = [];
+
+  for (var i = 1; i < lines.length; i++) {
+    var cols = parseCSVLine(lines[i]);
+
+    if (!cols[1]) {
+      continue;
+    }
+
+    var div = document.createElement("div");
+    div.className = "page";
+
+    var html = "<h1>" + (cols[1] || "") + "</h1>";
+    if (cols[2]) html += "<p>" + cols[2] + "</p>";
+    if (cols[3]) html += "<p>" + cols[3] + "</p>";
+    if (cols[4]) html += "<p>" + cols[4] + "</p>";
+
+    div.innerHTML = html;
+    document.body.appendChild(div);
+    pages.push(div);
+  }
+
+  if (pages.length > 0) {
+    currentPage = 0;
+    pages[0].classList.add("active");
+  }
+}
+
 function chargerDonnees() {
-  fetch(csvUrl)
+  var urlSansCache = csvUrl + "&t=" + new Date().getTime();
+
+  fetch(urlSansCache, { cache: "no-store" })
     .then(function(response) {
       return response.text();
     })
     .then(function(data) {
-
-      var lines = data.trim().split(/\r?\n/);
-
-      if (lines.length <= 1) return;
-
-      // reset
-      document.body.innerHTML = "";
-      pages = [];
-
-      for (var i = 1; i < lines.length; i++) {
-        var cols = parseCSVLine(lines[i]);
-
-        if (!cols[1]) continue;
-
-        var div = document.createElement("div");
-        div.className = "page";
-
-        var html = "<h1>" + (cols[1] || "") + "</h1>";
-
-        if (cols[2]) html += "<p>" + cols[2] + "</p>";
-        if (cols[3]) html += "<p>" + cols[3] + "</p>";
-        if (cols[4]) html += "<p>" + cols[4] + "</p>";
-
-        div.innerHTML = html;
-
-        document.body.appendChild(div);
-        pages.push(div);
-      }
-
-      if (pages.length > 0) {
-        currentPage = 0;
-        pages[0].classList.add("active");
-      }
+      construirePages(data);
+    })
+    .catch(function() {
+      document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Erreur de chargement du tableau</div>";
     });
 }
 
-// Rotation des pages
-setInterval(function () {
+setInterval(function() {
   if (pages.length === 0) return;
 
   pages[currentPage].classList.remove("active");
   currentPage = (currentPage + 1) % pages.length;
   pages[currentPage].classList.add("active");
-
 }, 8000);
 
-// Recharge automatique des données (toutes les 60 sec)
-setInterval(function () {
+setInterval(function() {
   chargerDonnees();
 }, 60000);
 
-// Chargement initial
-window.onload = function () {
+window.onload = function() {
   chargerDonnees();
 };
 </script>
