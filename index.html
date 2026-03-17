@@ -92,9 +92,25 @@ function construirePages(data) {
     div.className = "page";
 
     var html = "<h1>" + (cols[1] || "") + "</h1>";
-    if (cols[2]) html += "<p>" + cols[2] + "</p>";
-    if (cols[3]) html += "<p>" + cols[3] + "</p>";
-    if (cols[4]) html += "<p>" + cols[4] + "</p>";
+
+// Image 1 (Jérémie)
+if (cols[5]) {
+  html += "<div style='margin:20px'>";
+  html += "<img src='" + cols[5] + "' style='max-width:250px;border-radius:10px;'>";
+  html += "</div>";
+}
+
+// Texte
+if (cols[2]) html += "<p>" + cols[2] + "</p>";
+if (cols[3]) html += "<p>" + cols[3] + "</p>";
+if (cols[4]) html += "<p>" + cols[4] + "</p>";
+
+// Image 2 (Dorothée)
+if (cols[6]) {
+  html += "<div style='margin:20px'>";
+  html += "<img src='" + cols[6] + "' style='max-width:250px;border-radius:10px;'>";
+  html += "</div>";
+}
 
     div.innerHTML = html;
     document.body.appendChild(div);
