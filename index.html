@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <title>Repères du jour</title>
-
 <style>
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: white;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
 }
 
 .page {
   display: none;
   text-align: center;
   max-width: 1000px;
+  padding: 40px;
 }
 
-.active {
+.page.active {
   display: block;
 }
 
@@ -32,47 +32,95 @@ h1 {
 
 p {
   font-size: 40px;
-  margin: 10px 0;
+  margin: 12px 0;
 }
 </style>
 </head>
-
 <body>
 
-<div class="page active">
-  <h1>Bonjour</h1>
-  <p>Nous sommes mardi</p>
-  <p>Tout va bien</p>
-</div>
-
-<div class="page">
-  <h1>Aujourd'hui</h1>
-  <p>10h : infirmière</p>
-  <p>12h : déjeuner</p>
-  <p>15h : promenade</p>
-</div>
-
-<div class="page">
-  <h1>Où sont les proches ?</h1>
-  <p>Jérémie : au travail</p>
-  <p>Dorothée : aux courses</p>
-</div>
-
-<div class="page">
-  <h1>Ce soir</h1>
-  <p>Jérémie passe ce soir</p>
-</div>
-
 <script>
-window.onload = function () {
-  var pages = document.querySelectorAll('.page');
-  var currentPage = 0;
+var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS2BFQnnV9rnQfSK_sGQYs19HOSIqIdiS0lsZhPssu1A_M9E5lKvhzccNQMfYC2xwh_oF_oKXQ5mfpo/pub?output=csv";
 
-  setInterval(function () {
-    pages[currentPage].classList.remove('active');
-    currentPage = (currentPage + 1) % pages.length;
-    pages[currentPage].classList.add('active');
-  }, 8000);
+function parseCSVLine(line) {
+  var result = [];
+  var current = "";
+  var inQuotes = false;
+
+  for (var i = 0; i < line.length; i++) {
+    var char = line[i];
+
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  result.push(current);
+  return result;
+}
+
+window.onload = function () {
+  fetch(csvUrl)
+    .then(function(response) {
+      return response.text();
+    })
+    .then(function(data) {
+      var lines = data.trim().split(/\r?\n/);
+
+      if (lines.length <= 1) {
+        document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Aucune donnée trouvée</div>";
+        return;
+      }
+
+      var pages = [];
+
+      for (var i = 1; i < lines.length; i++) {
+        var cols = parseCSVLine(lines[i]);
+
+        if (!cols[1]) {
+          continue;
+        }
+
+        var div = document.createElement("div");
+        div.className = "page";
+
+        var html = "<h1>" + (cols[1] || "") + "</h1>";
+
+        if (cols[2]) html += "<p>" + cols[2] + "</p>";
+        if (cols[3]) html += "<p>" + cols[3] + "</p>";
+        if (cols[4]) html += "<p>" + cols[4] + "</p>";
+
+        div.innerHTML = html;
+        document.body.appendChild(div);
+        pages.push(div);
+      }
+
+      if (pages.length === 0) {
+        document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Aucune page à afficher</div>";
+        return;
+      }
+
+      pages[0].classList.add("active");
+
+      var currentPage = 0;
+      setInterval(function () {
+        pages[currentPage].classList.remove("active");
+        currentPage = (currentPage + 1) % pages.length;
+        pages[currentPage].classList.add("active");
+      }, 8000);
+    })
+    .catch(function() {
+      document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Erreur de chargement du tableau</div>";
+    });
 };
 </script>
 
