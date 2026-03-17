@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Repères du jour</title>
+
 <style>
 body {
   margin: 0;
@@ -35,11 +36,15 @@ p {
   margin: 12px 0;
 }
 </style>
+
 </head>
 <body>
 
 <script>
 var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS2BFQnnV9rnQfSK_sGQYs19HOSIqIdiS0lsZhPssu1A_M9E5lKvhzccNQMfYC2xwh_oF_oKXQ5mfpo/pub?output=csv";
+
+var pages = [];
+var currentPage = 0;
 
 function parseCSVLine(line) {
   var result = [];
@@ -68,27 +73,25 @@ function parseCSVLine(line) {
   return result;
 }
 
-window.onload = function () {
+function chargerDonnees() {
   fetch(csvUrl)
     .then(function(response) {
       return response.text();
     })
     .then(function(data) {
+
       var lines = data.trim().split(/\r?\n/);
 
-      if (lines.length <= 1) {
-        document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Aucune donnée trouvée</div>";
-        return;
-      }
+      if (lines.length <= 1) return;
 
-      var pages = [];
+      // reset
+      document.body.innerHTML = "";
+      pages = [];
 
       for (var i = 1; i < lines.length; i++) {
         var cols = parseCSVLine(lines[i]);
 
-        if (!cols[1]) {
-          continue;
-        }
+        if (!cols[1]) continue;
 
         var div = document.createElement("div");
         div.className = "page";
@@ -100,27 +103,36 @@ window.onload = function () {
         if (cols[4]) html += "<p>" + cols[4] + "</p>";
 
         div.innerHTML = html;
+
         document.body.appendChild(div);
         pages.push(div);
       }
 
-      if (pages.length === 0) {
-        document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Aucune page à afficher</div>";
-        return;
+      if (pages.length > 0) {
+        currentPage = 0;
+        pages[0].classList.add("active");
       }
-
-      pages[0].classList.add("active");
-
-      var currentPage = 0;
-      setInterval(function () {
-        pages[currentPage].classList.remove("active");
-        currentPage = (currentPage + 1) % pages.length;
-        pages[currentPage].classList.add("active");
-      }, 8000);
-    })
-    .catch(function() {
-      document.body.innerHTML = "<div style='font-size:40px;text-align:center;'>Erreur de chargement du tableau</div>";
     });
+}
+
+// Rotation des pages
+setInterval(function () {
+  if (pages.length === 0) return;
+
+  pages[currentPage].classList.remove("active");
+  currentPage = (currentPage + 1) % pages.length;
+  pages[currentPage].classList.add("active");
+
+}, 8000);
+
+// Recharge automatique des données (toutes les 60 sec)
+setInterval(function () {
+  chargerDonnees();
+}, 60000);
+
+// Chargement initial
+window.onload = function () {
+  chargerDonnees();
 };
 </script>
 
